@@ -100,8 +100,14 @@ class image_embedding_store:
     
     def categorize_animal_image(self, image_path):
         # TODO return the closest animal label from self.animal_labels. You can use self.animal_label_embedding, which is the text embedding for the animal labels.
-        pass
+        image_embedding = self.model.encode(Image.open(f"{self.dataset_dir}/{image_path}"))
+        self.animal_labels = ["cat", "dog", "bird", "fish", "horse"]
+        self.animal_label_embedding = self.model.encode(self.animal_labels)
 
+        distances = [[i, spatial.distance.euclidean(image_embedding, animal_embedding)] for i, animal_embedding in enumerate(self.animal_label_embedding)]
+        distances.sort(key=lambda x: x[1])
+        return self.animal_labels[distances[0][0]]
+        
 # Test stub for the different search algorithms
 if __name__ == "__main__":
     dataset_dir = 'dataset'
@@ -117,5 +123,5 @@ if __name__ == "__main__":
     print(f"Closest image: {closest_image}")
 
     # TODO:uncomment to run the test
-    # animal = img_store.categorize_animal_image("cat_a.png")
-    # print(f"Animal: {animal}")
+    animal = img_store.categorize_animal_image("cat_a.png")
+    print(f"Animal: {animal}")

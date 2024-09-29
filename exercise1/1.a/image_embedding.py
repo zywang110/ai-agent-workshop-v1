@@ -69,15 +69,32 @@ class image_embedding_store:
 
     def get_all_files(self):
         return list(self.embedding_dict.keys())
-
+    
     def find_top_k_similar_images_by_text(self, description, k=3):
         text_embedding = self.model.encode(description)
         # TODO return the closest image path
-        pass
+        similarities = []
+        for name, image_embedding in self.embedding_dict.items():
+            similarity = spatial.distance.euclidean(text_embedding, image_embedding)
+            similarities.append((name, similarity))
+
+        similarities = sorted(similarities, key=lambda x: x[0])
+
+        top_k_images = [name for name, _ in similarities[:k]]
+        return top_k_images
     
     def find_top_k_similar_images_by_image(self, image_path, k=3):
         # TODO return the closest image path
-        pass
+        image_embedding = self.model.encode(Image.open(image_path))
+        similarities = []
+        for name, embedding in self.embedding_dict.items():
+            similarity = spatial.distance.euclidean(image_embedding, embedding)
+            similarities.append((name, similarity))
+
+        similarities = sorted(similarities, key=lambda x: x[0])
+
+        top_k_images = [name for name, _ in similarities[:k]]
+        return top_k_images
 
 # Test stub for the different search algorithms
 if __name__ == "__main__":
@@ -85,11 +102,11 @@ if __name__ == "__main__":
     # Example usage of the image embedding functionalities
     img_store = image_embedding_store(dataset_dir)  # Assuming ImageEmbedding is the class name
 
-    query = "a cat reading a book"
+    query = "a cat studying a book"
 
     # TODO:uncomment to run the test
-    # closest_image = img_store.find_top_k_similar_images_by_text(query, k=1)
-    # print(f"Closest image: {closest_image}")
+    closest_image = img_store.find_top_k_similar_images_by_text(query, k=1)
+    print(f"Closest image: {closest_image}")
 
-    # closest_image = img_store.find_top_k_similar_images_by_image("cat_studying_b.png", k=1)
-    # print(f"Closest image: {closest_image}")
+    closest_image = img_store.find_top_k_similar_images_by_image("dataset/cat_studying_b.png", k=1)
+    print(f"Closest image: {closest_image}")
